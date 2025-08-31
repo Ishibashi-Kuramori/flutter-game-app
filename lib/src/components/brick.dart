@@ -7,8 +7,10 @@ import '../config.dart';
 import 'ball.dart';
 import 'bat.dart';
 
+// ブロック関連の処理
 class Brick extends RectangleComponent
-    with CollisionCallbacks, HasGameReference<BrickBreaker> {
+  with CollisionCallbacks, // 衝突判定コールバックを使用
+    HasGameReference<BrickBreaker> {
   Brick({required super.position, required Color color})
     : super(
         size: Vector2(brickWidth, brickHeight),
@@ -19,19 +21,21 @@ class Brick extends RectangleComponent
         children: [RectangleHitbox()],
       );
 
+  // 衝突判定コールバック(ボールと接触時)
   @override
   void onCollisionStart(
     Set<Vector2> intersectionPoints,
     PositionComponent other,
   ) {
     super.onCollisionStart(intersectionPoints, other);
-    removeFromParent();
-    game.score.value++;
+    removeFromParent(); // 自身を削除
+    game.score.value++; // スコア+1
 
+    // 最後のブロックと接触時
     if (game.world.children.query<Brick>().length == 1) {
-      game.playState = PlayState.won;
-      game.world.removeAll(game.world.children.query<Ball>());
-      game.world.removeAll(game.world.children.query<Bat>());
+      game.playState = PlayState.won; // ステータスをwonに遷移
+      game.world.removeAll(game.world.children.query<Ball>()); // ボールを削除
+      game.world.removeAll(game.world.children.query<Bat>()); // バットを削除
     }
   }
 }

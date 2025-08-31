@@ -1,6 +1,8 @@
-# game_app
+# flutter-game-app
 
-A new Flutter project.
+Flutterのブロック崩しアプリ
+[https://flutter-game-app-55ec2.web.app/](https://flutter-game-app-55ec2.web.app/)
+
 
 ## Getting Started
 

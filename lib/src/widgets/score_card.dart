@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// スコア表示関連
 class ScoreCard extends StatelessWidget {
   const ScoreCard({super.key, required this.score});
 

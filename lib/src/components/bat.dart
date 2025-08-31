@@ -6,13 +6,18 @@ import 'package:flutter/material.dart';
 
 import '../brick_breaker.dart';
 
-class Bat extends PositionComponent
-    with DragCallbacks, HasGameReference<BrickBreaker> {
+// バット関連
+class Bat extends PositionComponent 
+  with DragCallbacks, // ドラッグコールバック使用
+    HasGameReference<BrickBreaker> {
   Bat({
     required this.cornerRadius,
     required super.position,
     required super.size,
-  }) : super(anchor: Anchor.center, children: [RectangleHitbox()]);
+  }) : super(
+    anchor: Anchor.center,
+    children: [RectangleHitbox()]
+  );
 
   final Radius cornerRadius;
 
@@ -20,21 +25,24 @@ class Bat extends PositionComponent
     ..color = const Color(0xff1e6091)
     ..style = PaintingStyle.fill;
 
+  // RectangleComponent,CircleComponentではないのでrenderで描画する必要アリ
   @override
   void render(Canvas canvas) {
     super.render(canvas);
-    canvas.drawRRect(
+    canvas.drawRRect( // 丸い長方形を描画
       RRect.fromRectAndRadius(Offset.zero & size.toSize(), cornerRadius),
       _paint,
     );
   }
 
+  // ドラッグ操作コールバック
   @override
   void onDragUpdate(DragUpdateEvent event) {
     super.onDragUpdate(event);
     position.x = (position.x + event.localDelta.x).clamp(0, game.width);
   }
 
+  // キーボード操作による移動(brick_breaker.dartからcall)
   void moveBy(double dx) {
     add(
       MoveToEffect(
