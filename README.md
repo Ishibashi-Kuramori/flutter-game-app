@@ -1,6 +1,6 @@
 # flutter-game-app
 
-Flutterのブロック崩しアプリ
+Flutter縺ｮ繝悶Ο繝�繧ｯ蟠ｩ縺励い繝励Μ
 [https://flutter-game-app-55ec2.web.app/](https://flutter-game-app-55ec2.web.app/)
 
 
