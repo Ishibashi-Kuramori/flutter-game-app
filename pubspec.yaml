@@ -37,6 +37,7 @@ dependencies:
   flame: ^1.28.1
   google_fonts: ^6.3.0
   flutter_animate: ^4.5.2
+  flame_audio: ^2.11.8
 
 dev_dependencies:
   flutter_test:
@@ -54,6 +55,13 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  assets:
+  - assets/audio/Bat.mp3
+  - assets/audio/Brick.mp3
+  - assets/audio/GameOver.mp3
+  - assets/audio/Start.mp3
+  - assets/audio/Wall.mp3
+  - assets/audio/Win.mp3
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

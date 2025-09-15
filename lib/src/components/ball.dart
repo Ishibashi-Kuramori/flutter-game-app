@@ -2,6 +2,7 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flutter/material.dart';
+import 'package:flame_audio/flame_audio.dart';
 
 import '../brick_breaker.dart';
 import 'bat.dart';
@@ -52,6 +53,7 @@ class Ball extends CircleComponent // CircleComponent:: 円の描画
 
     // --- 左の壁 ---
     if (newPos.x - radius < 0) {
+      FlameAudio.play('Wall.mp3');
       double t = (radius - oldPos.x) / moveVec.x;    // 壁に当たるまでの比率を計算
       newPos = oldPos + moveVec * t;                 // 当たった位置に移動
       velocity.x = -velocity.x;                      // 反射
@@ -60,6 +62,7 @@ class Ball extends CircleComponent // CircleComponent:: 円の描画
 
     // --- 右の壁 ---
     else if (newPos.x + radius > game.width) {
+      FlameAudio.play('Wall.mp3');
       double t = (game.width - radius - oldPos.x) / moveVec.x;
       newPos = oldPos + moveVec * t;
       velocity.x = -velocity.x;
@@ -68,6 +71,7 @@ class Ball extends CircleComponent // CircleComponent:: 円の描画
 
     // --- 上の壁 ---
     else if (newPos.y - radius < 0) {
+      FlameAudio.play('Wall.mp3');
       double t = (radius - oldPos.y) / moveVec.y;
       newPos = oldPos + moveVec * t;
       velocity.y = -velocity.y;
@@ -80,12 +84,17 @@ class Ball extends CircleComponent // CircleComponent:: 円の描画
       add(
         RemoveEffect(
           delay: 0.35,
-          onComplete: () => game.playState = PlayState.gameOver,
+          onComplete: () => _gameOver(),
         ),
       );
     }
 
     return newPos;
+  }
+
+  void _gameOver() {
+    FlameAudio.play('GameOver.mp3');
+    game.playState = PlayState.gameOver;
   }
 
   // 衝突判定コールバック
@@ -102,6 +111,7 @@ class Ball extends CircleComponent // CircleComponent:: 円の描画
 
     // バットと衝突した場合
     } else if (other is Bat) {
+      FlameAudio.play('Bat.mp3');
       velocity.y = -velocity.y; // 縦方向はそのまま反転
       // 横方向はバットとボールの相対位置に応じて変化させる
       velocity.x =
@@ -109,6 +119,7 @@ class Ball extends CircleComponent // CircleComponent:: 円の描画
           (position.x - other.position.x) / other.size.x * game.width * 0.3;
     // ブロックと衝突した場合
     } else if (other is Brick) {
+      FlameAudio.play('Brick.mp3');
       // ブロック上側に衝突
       if (position.y < other.position.y - other.size.y / 2) {
         velocity.y = -velocity.y;

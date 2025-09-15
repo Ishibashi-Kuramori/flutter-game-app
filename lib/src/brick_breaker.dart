@@ -6,6 +6,7 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart'; 
 import 'package:flutter/services.dart';
+import 'package:flame_audio/flame_audio.dart';
 
 import 'components/components.dart';
 import 'config.dart';
@@ -54,6 +55,10 @@ class BrickBreaker extends FlameGame
   @override
   FutureOr<void> onLoad() async {
     super.onLoad();
+
+    // サウンド系のキャッシュ
+    await FlameAudio.audioCache.loadAll(['Bat.mp3','Brick.mp3', 'GameOver.mp3', 'Start.mp3', 'Wall.mp3', 'Win.mp3']);
+
     // 座標(0,0)の起点を左上にセット(デフォは中央)
     camera.viewfinder.anchor = Anchor.topLeft;
     // ゲーム画面描画領域を配置
@@ -66,6 +71,8 @@ class BrickBreaker extends FlameGame
   void startGame() {
     // 既に開始中の場合は抜ける
     if (playState == PlayState.playing) return;
+
+    FlameAudio.play('Start.mp3');
 
     // 既存のオブジェクトを除去
     world.removeAll(world.children.query<Ball>());
