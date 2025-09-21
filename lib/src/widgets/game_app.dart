@@ -51,7 +51,11 @@ class _GameAppState extends State<GameApp> {
                 child: Column(
                   children: [
                     // スコア表示
-                    ScoreCard(score: game.score),
+                    ScoreCard(
+                      score: game.score,
+                      nameController: game.nameController,
+                      textFieldWidth: 360
+                    ),
                     Expanded(
                       child: FittedBox(
                         child: SizedBox(
@@ -61,23 +65,32 @@ class _GameAppState extends State<GameApp> {
                             game: game, // ゲーム本体の描画
                             overlayBuilderMap: {
                               // ステータスの開始のオーバーレイを定義
-                              PlayState.welcome.name: (context, game) =>
-                                  const OverlayScreen(
+                              PlayState.welcome.name: (context, gameInstance) {
+                                  final brickBreakerGame = gameInstance as BrickBreaker;
+                                  return OverlayScreen(
                                     title: 'TAP TO PLAY',
                                     subtitle: 'Use arrow keys or swipe',
-                                  ),
+                                    hightScoreStr: brickBreakerGame.hightScoreStr ?? Future.value('now loadong'),
+                                  );
+                              },
                               // ステータスの敗北のオーバーレイを定義
-                              PlayState.gameOver.name: (context, game) =>
-                                  const OverlayScreen(
+                              PlayState.gameOver.name: (context, gameInstance) {
+                                  final brickBreakerGame = gameInstance as BrickBreaker;
+                                  return OverlayScreen(
                                     title: 'G A M E   O V E R',
                                     subtitle: 'Tap to Play Again',
-                                  ),
+                                    hightScoreStr: brickBreakerGame.hightScoreStr ?? Future.value('now loadong'),
+                                  );
+                              },
                               // ステータスの勝利のオーバーレイを定義
-                              PlayState.won.name: (context, game) =>
-                                  const OverlayScreen(
+                              PlayState.won.name: (context, gameInstance) {
+                                  final brickBreakerGame = gameInstance as BrickBreaker;
+                                  return OverlayScreen(
                                     title: 'Y O U   W O N ! ! !',
                                     subtitle: 'Tap to Play Again',
-                                  ),
+                                    hightScoreStr: brickBreakerGame.hightScoreStr ?? Future.value('now loadong'),
+                                  );
+                              }
                             },
                           ),
                         ),

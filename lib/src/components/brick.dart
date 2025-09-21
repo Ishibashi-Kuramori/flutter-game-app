@@ -1,12 +1,9 @@
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
-import 'package:flame_audio/flame_audio.dart';
 
 import '../brick_breaker.dart';
 import '../config.dart';
-import 'ball.dart';
-import 'bat.dart';
 
 // ブロック関連の処理
 class Brick extends RectangleComponent
@@ -34,10 +31,7 @@ class Brick extends RectangleComponent
 
     // 最後のブロックと接触時
     if (game.world.children.query<Brick>().length == 1) {
-      FlameAudio.play('Win.mp3');
-      game.playState = PlayState.won; // ステータスをwonに遷移
-      game.world.removeAll(game.world.children.query<Ball>()); // ボールを削除
-      game.world.removeAll(game.world.children.query<Bat>()); // バットを削除
+      game.gameEnd(true);
     }
   }
 }

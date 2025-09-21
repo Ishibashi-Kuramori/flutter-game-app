@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:html' as html;
 
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
@@ -7,6 +8,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart'; 
 import 'package:flutter/services.dart';
 import 'package:flame_audio/flame_audio.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'components/components.dart';
 import 'config.dart';
@@ -27,9 +29,13 @@ class BrickBreaker extends FlameGame
   );
 
   final ValueNotifier<int> score = ValueNotifier(0); // スコア
+  final nameController = TextEditingController();
   final rand = math.Random(); // 乱数
   double get width => size.x;  // ゲーム画面幅
   double get height => size.y; // ゲーム画面高さ
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance; // Firestoreインスタンスを取得
+  Future<String>? hightScoreStr; // ハイスコア文字列(非同期で値を取得する為Futureを使用)
+  int lowScore = 0; // ハイスコア内の最低スコア
 
   // ステータスsetter/geter
   late PlayState _playState;
@@ -63,6 +69,14 @@ class BrickBreaker extends FlameGame
     camera.viewfinder.anchor = Anchor.topLeft;
     // ゲーム画面描画領域を配置
     world.add(PlayArea());
+    // ローカルストレージの名前を取得
+    final savedName = html.window.localStorage['playerName'];
+    if (savedName != null && savedName.isNotEmpty) {
+      nameController.text = savedName;
+    }
+    // ハイスコアを取得
+    hightScoreStr = getHighScoresAsString();
+    debugPrint('collision with $hightScoreStr');
     // ステータスをwelcomeで初期化
     playState = PlayState.welcome;
   }
@@ -108,7 +122,7 @@ class BrickBreaker extends FlameGame
     // ブロックを追加
     world.addAll([
       for (var i = 0; i < brickColors.length; i++)
-        for (var j = 1; j <= 5; j++)
+        for (var j = 1; j <= 9; j++)
           Brick(
             position: Vector2(
               (i + 0.5) * brickWidth + (i + 1) * brickGutter,
@@ -120,6 +134,84 @@ class BrickBreaker extends FlameGame
     
     // デバッグONで座標情報が表示
     //debugMode = true;
+  }
+
+  // ゲーム終了時の処理
+  void gameEnd(bool isWin) async {
+
+    // ハイスコア更新時はスコアをFirebaseに送信
+    if (score.value > lowScore) {
+      await _firestore.collection('HightScore').add({
+        'name': nameController.text,
+        'score': score.value,
+      });
+      // ハイスコア表示を更新
+      hightScoreStr = getHighScoresAsString();
+    }
+
+    // 名前が入力されていたらローカルストレージに保存
+    if (nameController.text.isNotEmpty) {
+      html.window.localStorage['playerName'] = nameController.text;
+    }
+
+    if (isWin) {
+      // 効果音を鳴らして勝利画面表示
+      FlameAudio.play('Win.mp3');
+      playState = PlayState.won; // ステータスをwonに遷移
+    } else {
+      // 効果音を鳴らしてゲームオーバー画面表示
+      FlameAudio.play('GameOver.mp3');
+      playState = PlayState.gameOver;
+    }
+  }
+
+  // FirebaseからHightScore一覧を取得し、文字列加工して返却
+  Future<String> getHighScoresAsString() async {
+    try {
+      // 'HightScore' コレクションからドキュメントをscore降順で最大5件取得する
+      final QuerySnapshot querySnapshot = await _firestore.collection('HightScore')
+        .orderBy('score', descending: true).get();
+      // ドキュメントが一つもない場合は空文字列を返す
+      if (querySnapshot.docs.isEmpty) {
+        return '';
+      }
+      final List<String> rank = ['1st', '2nd', '3rd', '4th', '5th'];
+      final List<String> scoreEntries = [];
+
+      // タイトル部分を作成
+      scoreEntries.add('');
+      scoreEntries.add('    HIGH-SCORE');
+      scoreEntries.add('');
+
+      // 1位から5位までループ
+      for (int i = 0; i < 5; i++) {
+        String name = '';
+        int score = 0;
+        // 実際にドキュメントが存在するかチェック
+        if (i < querySnapshot.docs.length) {
+          final Map<String, dynamic> data = querySnapshot.docs[i].data() as Map<String, dynamic>;
+          name = data['name'] as String? ?? '';
+          score = data['score'] as int? ?? 0;
+          // ランキングが5thまで有る場合は最低スコアを記録
+          if (i == 4) lowScore = score;
+        }
+        // 名前が空文字の場合はNoNameを代入
+        if(name.isEmpty) name = 'NoName';
+        // ランキングを1行分生成
+        scoreEntries.add('${rank[i]}: ${score.toString().padLeft(2, '0')} … $name ');
+      }
+
+      // 末尾に余白を入れる
+      scoreEntries.add('');
+      scoreEntries.add('');
+      scoreEntries.add('');
+
+      // リスト内の文字列を改行で結合して返す
+      return scoreEntries.join('\n');
+    } catch (e) {
+      // エラーが発生した場合
+      return 'GetHighScoresError';
+    }
   }
 
   // タップイベント処理

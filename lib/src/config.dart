@@ -28,4 +28,4 @@ const brickGutter = gameWidth * 0.015; // ブロック間の隙間
 final brickWidth =
     (gameWidth - (brickGutter * (brickColors.length + 1))) / brickColors.length;
 const brickHeight = gameHeight * 0.03; // ブロックの高さ
-const difficultyModifier = 1.03; // ボールの速度上昇量
+const difficultyModifier = 1.06; // ボールの速度上昇量

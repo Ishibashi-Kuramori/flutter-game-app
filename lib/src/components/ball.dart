@@ -84,17 +84,12 @@ class Ball extends CircleComponent // CircleComponent:: 円の描画
       add(
         RemoveEffect(
           delay: 0.35,
-          onComplete: () => _gameOver(),
+          onComplete: () => game.gameEnd(false),
         ),
       );
     }
 
     return newPos;
-  }
-
-  void _gameOver() {
-    FlameAudio.play('GameOver.mp3');
-    game.playState = PlayState.gameOver;
   }
 
   // 衝突判定コールバック
@@ -117,6 +112,8 @@ class Ball extends CircleComponent // CircleComponent:: 円の描画
       velocity.x =
           velocity.x +
           (position.x - other.position.x) / other.size.x * game.width * 0.3;
+      // ボールの速度を若干上昇させる
+      velocity.setFrom(velocity * difficultyModifier);
     // ブロックと衝突した場合
     } else if (other is Brick) {
       FlameAudio.play('Brick.mp3');
@@ -133,8 +130,6 @@ class Ball extends CircleComponent // CircleComponent:: 円の描画
       } else if (position.x > other.position.x) {
         velocity.x = -velocity.x;
       }
-      // ボールの速度を若干上昇させる
-      velocity.setFrom(velocity * difficultyModifier);
     // それ以外と衝突した場合はログに出す
     } else {
       debugPrint('collision with $other');
