@@ -14,6 +14,25 @@ const brickColors = [
   Color(0xff577590),
 ];
 
+// 特殊な名前
+const spNameReset = 'reset';
+const spNamePower = 'power';
+const spNameLong = 'long';
+const spNameShort = 'short';
+const spNameBig = 'big';
+const spNameSmall = 'small';
+const spNameDouble = 'double';
+
+const spNames = [
+  spNameReset,
+  spNamePower,
+  spNameLong,
+  spNameShort,
+  spNameBig,
+  spNameSmall,
+  spNameDouble,
+];
+
 // ゲーム画面描画領域
 const gameWidth = 820.0;
 const gameHeight = 1600.0;

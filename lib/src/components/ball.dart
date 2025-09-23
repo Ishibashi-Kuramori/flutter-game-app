@@ -8,6 +8,7 @@ import '../brick_breaker.dart';
 import 'bat.dart';
 import 'brick.dart';
 import 'play_area.dart'; 
+import '../config.dart';
 
 // ボール関連
 class Ball extends CircleComponent // CircleComponent:: 円の描画
@@ -117,6 +118,8 @@ class Ball extends CircleComponent // CircleComponent:: 円の描画
     // ブロックと衝突した場合
     } else if (other is Brick) {
       FlameAudio.play('Brick.mp3');
+      // 名前が'power'の場合はブロック貫通
+      if (game.nameController.text == spNamePower) return;
       // ブロック上側に衝突
       if (position.y < other.position.y - other.size.y / 2) {
         velocity.y = -velocity.y;

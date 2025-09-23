@@ -99,9 +99,12 @@ class BrickBreaker extends FlameGame
     score.value = 0;
 
     // ボールを追加
+    double spballRadius = ballRadius;
+    if (nameController.text == spNameBig) spballRadius *= 6;
+    if (nameController.text == spNameSmall) spballRadius /= 6;
     world.add(Ball(
       difficultyModifier: difficultyModifier,
-      radius: ballRadius,
+      radius: spballRadius,
       position: size / 2, // 画面中央に配置
       velocity: Vector2(
           (rand.nextDouble() - 0.5) * width, // 左右ランダムな強度(方角)に移動
@@ -109,11 +112,28 @@ class BrickBreaker extends FlameGame
         )
         .normalized()
         ..scale(height / 4))); // ボールの速度は、ゲームの高さの 1/4
-    
+
+    // ボールを追加(2個目)
+    if (nameController.text == spNameDouble) {
+    world.add(Ball(
+      difficultyModifier: difficultyModifier,
+      radius: spballRadius,
+      position: size / 2, // 画面中央に配置
+      velocity: Vector2(
+          (rand.nextDouble() - 0.5) * width, // 左右ランダムな強度(方角)に移動
+          height * -0.2 // 上方向に移動(マイナスだと上に行く)
+        )
+        .normalized()
+        ..scale(height / 4))); // ボールの速度は、ゲームの高さの 1/4
+    }
+
     // バットを追加
+    double spbatWidth = batWidth;
+    if (nameController.text == spNameLong) spbatWidth *= 2;
+    if (nameController.text == spNameShort) spbatWidth /= 2;
     world.add(
       Bat(
-        size: Vector2(batWidth, batHeight),
+        size: Vector2(spbatWidth, batHeight),
         cornerRadius: const Radius.circular(ballRadius / 2),
         position: Vector2(width / 2, height * 0.95), // 配置位置(中央下部)
       ),
@@ -139,19 +159,28 @@ class BrickBreaker extends FlameGame
   // ゲーム終了時の処理
   void gameEnd(bool isWin) async {
 
-    // ハイスコア更新時はスコアをFirebaseに送信
-    if (score.value > lowScore) {
-      await _firestore.collection('HightScore').add({
-        'name': nameController.text,
-        'score': score.value,
-      });
+    // 名前が'reset'の場合はハイスコアを初期化
+    if (nameController.text == spNameReset) {
+      await initializeHighScores();
       // ハイスコア表示を更新
       hightScoreStr = getHighScoresAsString();
-    }
-
-    // 名前が入力されていたらローカルストレージに保存
-    if (nameController.text.isNotEmpty) {
-      html.window.localStorage['playerName'] = nameController.text;
+    } 
+    
+    // 特殊な名前以外の場合にハイスコア更新
+    if (!spNames.contains(nameController.text)) {
+      // ハイスコア更新時はスコアをFirebaseに送信
+      if (score.value > lowScore) {
+        await _firestore.collection('HightScore').add({
+          'name': nameController.text,
+          'score': score.value,
+        });
+        // ハイスコア表示を更新
+        hightScoreStr = getHighScoresAsString();
+      }
+      // 特殊な名前以外が入力されていたらローカルストレージに保存
+      if (nameController.text.isNotEmpty) {
+        html.window.localStorage['playerName'] = nameController.text;
+      }
     }
 
     if (isWin) {
@@ -163,6 +192,8 @@ class BrickBreaker extends FlameGame
       FlameAudio.play('GameOver.mp3');
       playState = PlayState.gameOver;
     }
+    // ボールを削除
+    world.removeAll(world.children.query<Ball>());
   }
 
   // FirebaseからHightScore一覧を取得し、文字列加工して返却
@@ -212,6 +243,25 @@ class BrickBreaker extends FlameGame
       // エラーが発生した場合
       return 'GetHighScoresError';
     }
+  }
+
+  // ハイスコアの初期化
+  Future<void> initializeHighScores() async {
+    try {
+      // コレクション内のすべてのドキュメントを取得
+      final QuerySnapshot snap = await _firestore.collection('HightScore').get();
+      if (snap.docs.isEmpty) return; // 既にドキュメントが無ければ終了
+      // バッチ処理を作成
+      final WriteBatch batch = _firestore.batch();
+      // 各ドキュメントをバッチに追加して削除指示
+      for (final doc in snap.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit(); // バッチをコミット
+    } catch (e) {
+      debugPrint('initializeHighScores(): $e');
+    }
+    return;
   }
 
   // タップイベント処理
