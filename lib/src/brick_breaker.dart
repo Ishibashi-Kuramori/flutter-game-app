@@ -170,10 +170,7 @@ class BrickBreaker extends FlameGame
     if (!spNames.contains(nameController.text)) {
       // ハイスコア更新時はスコアをFirebaseに送信
       if (score.value > lowScore) {
-        await _firestore.collection('HightScore').add({
-          'name': nameController.text,
-          'score': score.value,
-        });
+        await sendHighScores();
         // ハイスコア表示を更新
         hightScoreStr = getHighScoresAsString();
       }
@@ -243,6 +240,19 @@ class BrickBreaker extends FlameGame
       // エラーが発生した場合
       return 'GetHighScoresError';
     }
+  }
+
+  // ハイスコアの初期化
+  Future<void> sendHighScores() async {
+    try {
+      await _firestore.collection('HightScore').add({
+        'name': nameController.text,
+        'score': score.value,
+      });
+    } catch (e) {
+      debugPrint('sendHighScores(): $e');
+    }
+    return;
   }
 
   // ハイスコアの初期化
